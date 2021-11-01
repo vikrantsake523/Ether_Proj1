@@ -2,6 +2,9 @@ import React, { Component } from 'react'
 import Navbar from './Navbar'
 import './App.css'
 import Web3 from 'web3'
+import DaiToken from '../abis/DaiToken.json'
+import DappToken from '../abis/DappToken.json'
+import TokenFarm from '../abis/TokenFarm.json'
 
 class App extends Component {
 
@@ -23,9 +26,51 @@ class App extends Component {
 
     //get netwk id : 5777
     const networkId = await web3.eth.net.getId()
-    // console.log(networkId) 
 
+    //load dai token from abi
+    const daiTokenData = DaiToken.networks[networkId]
+    if(daiTokenData){
+
+      //var contract = new Contract(jsonInterface, address);
+      const daiToken = new web3.eth.Contract(DaiToken.abi, daiTokenData.address)
+      this.setState({ daiToken})
+
+      let daiTokenBalance = await daiToken.methods.balanceOf(this.state.account).call()
+      this.setState({daiTokenBalance: daiTokenBalance.toString()})
+    }
+    else{
+      window.alert('DaiToken contract not deployed to detected network')
+    }
     
+    
+    //load dapptoken data from abi
+    const dappTokenData = DappToken.networks[networkId]
+    if(dappTokenData){
+      const dappToken = new web3.eth.Contract(DappToken.abi, dappTokenData.address)
+      this.setState({ dappToken})
+
+      let dappTokenBalance = await dappToken.methods.balanceOf(this.state.account).call()
+      this.setState({dappTokenBalance: dappTokenBalance.toString()})
+    }
+    else{
+      window.alert('DappToken contract not deployed to detected network')
+    }
+
+    //load tokenfarm data from abi
+    const tokenFarmData = TokenFarm.networks[networkId]
+    if(tokenFarmData){
+      const tokenFarm = new web3.eth.Contract(TokenFarm.abi, tokenFarmData.address)
+      this.setState({ tokenFarmData })
+
+      let stakingBalance = await tokenFarm.methods.stakingBalance(this.state.account).call()
+      this.setState({stakingBalance: stakingBalance.toString()})
+    }
+    else{
+      window.alert('TokenFarm contract not deployed to detected network')
+    }
+
+    // this is for website loading
+    this.setState({loading: false})
   }
 
   async loadWeb3(){
